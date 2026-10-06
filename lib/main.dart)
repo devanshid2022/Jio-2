@@ -112,6 +112,7 @@ class _SimSalesHomePageState extends State<SimSalesHomePage> {
   }
 
   void _processSimBarcode(String value) {
+    // ૧૮ થી ૨૨ અંકનો ICCID નંબર શોધવા માટે
     final regExp = RegExp(r'\b(89\d{16,20}|\d{18,22})\b');
     final match = regExp.firstMatch(value);
     final iccid = match != null ? match.group(0)! : value.trim();
@@ -123,21 +124,25 @@ class _SimSalesHomePageState extends State<SimSalesHomePage> {
   }
 
   void _processAadhaarData(String rawText) {
+    // આધાર નંબર (૧૨ અંક)
     final aadhaarMatch = RegExp(r'\b\d{4}\s?\d{4}\s?\d{4}\b').firstMatch(rawText);
     if (aadhaarMatch != null) {
       _idNumberController.text = aadhaarMatch.group(0)!;
     }
 
+    // પાન નંબર (ABCDE1234F)
     final panMatch = RegExp(r'[A-Z]{5}[0-9]{4}[A-Z]{1}').firstMatch(rawText.toUpperCase());
     if (panMatch != null) {
       _idNumberController.text = panMatch.group(0)!;
     }
 
+    // જન્મ તારીખ
     final dobMatch = RegExp(r'(\d{2}[\/\-]\d{2}[\/\-]\d{4}|\d{4}[\/\-]\d{2}[\/\-]\d{2})').firstMatch(rawText);
     if (dobMatch != null) {
       _dobController.text = dobMatch.group(0)!;
     }
 
+    // નામ
     final nameMatch = RegExp(r'name="([^"]+)"', caseSensitive: false).firstMatch(rawText);
     if (nameMatch != null) {
       _nameController.text = nameMatch.group(1)!;
@@ -146,6 +151,7 @@ class _SimSalesHomePageState extends State<SimSalesHomePage> {
     _showSnackBar('વિગતો આપોઆપ ભરાઈ ગઈ!');
   }
 
+  // ૪. ડેટા સેવ કરવો (કાયમી)
   void _saveRecord() async {
     if (_nameController.text.trim().isEmpty && _iccidController.text.trim().isEmpty) {
       _showSnackBar('કૃપા કરીને નામ અથવા ICCID નંબર દાખલ કરો.');
@@ -183,7 +189,7 @@ class _SimSalesHomePageState extends State<SimSalesHomePage> {
     _iccidController.clear();
   }
 
-  // બેકઅપ ફાઇલ અને WhatsApp / Drive / Downloads શેરિંગ
+  // ૫. બેકઅપ ફાઇલ અને WhatsApp / Drive / Downloads માં શેર
   Future<void> _exportBackupFile() async {
     if (_savedRecords.isEmpty) {
       _showSnackBar('બેકઅપ માટે કોઈ ડેટા નથી.');
@@ -529,44 +535,6 @@ class _SimSalesHomePageState extends State<SimSalesHomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            // બનાવનારની વિગત (Developer Contact Info)
-            Card(
-              elevation: 1,
-              color: Colors.teal.shade50,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-                child: Column(
-                  children: [
-                    const Text(
-                      '🛠️ Application Developed By',
-                      style: TextStyle(fontSize: 12, color: Colors.teal, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Dilipsinh Parmar',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.phone, size: 16, color: Colors.teal),
-                        SizedBox(width: 6),
-                        Text(
-                          'Contact: +91 9574932281',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.teal),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
