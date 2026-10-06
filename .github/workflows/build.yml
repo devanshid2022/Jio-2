@@ -1,0 +1,54 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Setup Android Project & Permissions
+        run: |
+          mkdir temp_scaffold
+          cd temp_scaffold
+          flutter create --org com.simsales.scan --project-name sim_sales_app .
+          cp -r android ../
+          cd ..
+          rm -rf temp_scaffold
+
+          sed -i 's/<application/<uses-permission android:name="android.permission.CAMERA"\/> <uses-permission android:name="android.permission.INTERNET"\/> <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"\/> <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"\/> <application/' android/app/src/main/AndroidManifest.xml
+
+          sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' android/app/build.gradle || true
+          sed -i 's/compileSdk = .*/compileSdk = 34/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion .*/targetSdkVersion 34/' android/app/build.gradle || true
+          sed -i 's/targetSdk = .*/targetSdk = 34/' android/app/build.gradle || true
+          sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle || true
+          sed -i 's/minSdk = .*/minSdk = 21/' android/app/build.gradle || true
+
+      - name: Install Packages
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SIM-Sales-Scan-App
+          path: build/app/outputs/flutter-apk/app-debug.apk
